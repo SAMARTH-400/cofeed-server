@@ -1,22 +1,49 @@
 import PostModel from "../models/postModel.js";
 import UserModel from "../models/userModel.js";
 import mongoose from "mongoose";
+import { v2 as cloudinary } from 'cloudinary'
+
+cloudinary.config({ 
+  cloud_name: 'ddrw5stax', 
+  api_key: '987139284143613', 
+  api_secret: 'Lt-2L3b7S9OGHXEUS1590r9OH2A' 
+});
 
 // creating a post
 
 export const createPost = async (req, res) => {
-  const newPost = new PostModel(req.body);
-
-  try {
-    await newPost.save();
-    res.status(200).json(newPost);
-  } catch (error) {
-    res.status(500).json(error);
+  if(req.files && req.files.image) {
+    const file = req.files.image;
+    cloudinary.uploader.upload(file.tempFilePath,(err,result)=>{
+      const newPost = new PostModel({
+        _id: new mongoose.Types.ObjectId,
+        userId: req.body.userId,
+        desc: req.body.desc,
+        image: result.url,
+        createdAt: new Date()
+      });
+      newPost.save().then(result=>{
+        res.status(200).json(result);
+      }).catch(error=>{
+        res.status(500).json(error);
+      })
+    })
   }
+  else{
+    const newPost = new PostModel({
+      _id: new mongoose.Types.ObjectId,
+      userId: req.body.userId,
+      desc: req.body.desc,
+      createdAt: new Date()
+    });
+    newPost.save().then(result=>{
+      res.status(200).json(result);
+    }).catch(error=>{
+      res.status(500).json(error);
+    })
+  }  
 };
-
 // get a post
-
 export const getPost = async (req, res) => {
   const id = req.params.id;
 

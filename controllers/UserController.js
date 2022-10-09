@@ -1,7 +1,13 @@
 import UserModel from "../models/userModel.js";
-
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken'
+import { v2 as cloudinary } from 'cloudinary'
+
+cloudinary.config({ 
+  cloud_name: 'ddrw5stax', 
+  api_key: '987139284143613', 
+  api_secret: 'Lt-2L3b7S9OGHXEUS1590r9OH2A' 
+});
 // Get a User
 export const getUser = async (req, res) => {
   const id = req.params.id;
@@ -50,6 +56,18 @@ export const updateUser = async (req, res) => {
         req.body.password = await bcrypt.hash(password, salt);
       }
       // have to change this
+      if(req.files && req.files.profileImage){
+        const file = req.files.profileImage;
+        await cloudinary.uploader.upload( file.tempFilePath,(err,result)=>{
+        req.body.profilePicture = result.url;
+        })
+      }
+      if(req.files && req.files.coverImage){
+        const file = req.files.coverImage;
+        await cloudinary.uploader.upload( file.tempFilePath,(err,result)=>{
+          req.body.coverPicture = result.url;
+        })
+      }
       const user = await UserModel.findByIdAndUpdate(id, req.body, {
         new: true,
       });
@@ -58,7 +76,6 @@ export const updateUser = async (req, res) => {
         process.env.JWTKEY,
         { expiresIn: "1h" }
       );
-      console.log({user, token})
       res.status(200).json({user, token});
     } catch (error) {
       console.log("Error2")

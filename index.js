@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import bodyParser from "body-parser";
+import fileUpload from "express-fileupload";
 
 // routes
 import AuthRoute from './routes/AuthRoute.js'
@@ -22,7 +23,6 @@ const httpServer = createServer(app);
 const io = new Server(httpServer, {
 	cors: {
 		origin: "*",
-		methods: [ "GET", "POST" ]
 	}
 });
 
@@ -30,6 +30,9 @@ const io = new Server(httpServer, {
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use(cors());
+app.use(fileUpload({
+  useTempFiles : true
+}));
 // to serve images inside public folder
 app.use(express.static('public')); 
 app.use('/images', express.static('images'));
