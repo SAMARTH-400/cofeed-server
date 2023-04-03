@@ -6,7 +6,7 @@ export const createChat = async (req, res) => {
       members: { $all: [req.body.receiverId, req.body.senderId] },
     });
     if(chat){
-      res.send(200).json(chat);
+      res.status(200).json(chat);
     }
     else{
       const newChat = new ChatModel({
